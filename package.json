@@ -7,5 +7,11 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Ari Lotter",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "canvas": "^1.4.0",
+    "map-limit": "0.0.1",
+    "multi-bin-packer": "^1.1.3",
+    "opentype.js": "^0.6.4"
+  }
 }
