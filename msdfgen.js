@@ -117,7 +117,7 @@ module.exports = function (fontPath) {
     let width = Math.round((glyph.xMax - glyph.xMin) * scale) + pad + pad;
     let height = Math.round((font.ascender - font.descender) * scale) + pad + pad;
     // const height = Math.round((glyph.yMax - glyph.yMin) * scale) + pad + pad;
-    let command = `./msdfgen.bin ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${font.ascender * scale} -pxrange 3 -defineshape "${shapeDesc}"`;
+    let command = `./msdfgen.osx ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${font.ascender * scale} -pxrange 3 -defineshape "${shapeDesc}"`;
     // command += ` -testrender output/${char.charCodeAt(0)}-render.png ${width * 10} ${height * 10}`;
     exec(command, (err, stdout, stderr) => {
       if (err) callback(err);
