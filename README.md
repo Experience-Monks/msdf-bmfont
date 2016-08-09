@@ -12,7 +12,7 @@ This tool uses [Chlumsky's msdfgen](https://github.com/Chlumsky/msdfgen) to gene
 ```sh
 npm install msdf-bmfont --save-dev
 ```
-## Example
+## Examples
 
 Writing the distance fields and font data to disk:
 ```js
