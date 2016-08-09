@@ -38,7 +38,7 @@ Generating a single channel signed distance field with a custom character set:
 const generateBMFont = require('msdf-bmfont');
 
 const opt = {
-  charset: 'ABCDEFG1234567',
+  charset: 'ABC.ez_as-123!',
   fieldType: 'sdf'
 };
 generateBMFont('Some-Font.ttf', opt, (error, textures, font) => {
