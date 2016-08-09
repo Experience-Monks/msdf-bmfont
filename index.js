@@ -144,7 +144,7 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
   let width = Math.round((glyph.xMax - glyph.xMin) * scale) + pad + pad;
   let height = Math.round((font.ascender - font.descender) * scale) + pad + pad;
   // let height = Math.round((glyph.yMax - glyph.yMin) * scale) + pad + pad;
-  let command = `./msdfgen.osx ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${font.ascender * scale} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
+  let command = `${__dirname}/msdfgen.osx ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${font.ascender * scale} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
   // command += ` -testrender output/${char.charCodeAt(0)}-render.png ${width * 10} ${height * 10}`;
   exec(command, (err, stdout, stderr) => {
     if (err) return callback(err);
