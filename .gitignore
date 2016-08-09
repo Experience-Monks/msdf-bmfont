@@ -1,5 +1,5 @@
 .DS_Store
 node_modules/
 npm_debug.log
-output/*.fnt
-output/*.png
+test/*.fnt
+test/*.png
