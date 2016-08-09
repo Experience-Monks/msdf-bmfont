@@ -147,17 +147,15 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
   let command = `./msdfgen.osx ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${font.ascender * scale} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
   // command += ` -testrender output/${char.charCodeAt(0)}-render.png ${width * 10} ${height * 10}`;
   exec(command, (err, stdout, stderr) => {
-    if (err) callback(err);
+    if (err) return callback(err);
     const rawImageData = stdout.match(/([0-9a-fA-F]+)/g).map(str => parseInt(str, 16)); // split on every number, parse
     const pixels = [];
-    if (fieldType === 'sdf') {
-      for (let i = 0; i < rawImageData.length; i++) {
-        pixels.push(rawImageData[i], rawImageData[i], rawImageData[i], 255); // add 255 as alpha every 3 elements
-      }
-    } else if (fieldType === 'msdf') {
-      for (let i = 0; i < rawImageData.length; i += 3) {
-        pixels.push(...rawImageData.slice(i, i + 3), 255); // add 255 as alpha every 3 elements
-      }
+    const channelCount = rawImageData.length / width / height;
+    if (!isNaN(channelCount) && channelCount % 1 !== 0) {
+      return callback(new RangeError('msdfgen returned an image with an invalid length'));
+    }
+    for (let i = 0; i < rawImageData.length; i += channelCount) {
+      pixels.push(...rawImageData.slice(i, i + channelCount), 255); // add 255 as alpha every 3 elements
     }
     // if (((pixels.length / 4) / width) / height !== 1) {
     //   console.log('output error, image is wrong length');
@@ -165,12 +163,12 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
     //   debugger;
     // }
     let imageData;
-    try {
-      imageData = new Canvas.ImageData(new Uint8ClampedArray(pixels), width, height);
-    } catch (err) {
-      console.log(`failed to generate bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font without image`);
+    if (isNaN(channelCount)) {
+      console.log(`couldn't generate bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font without image`);
       width = 0;
       height = 0;
+    } else {
+      imageData = new Canvas.ImageData(new Uint8ClampedArray(pixels), width, height);
     }
     const container = {
       data: {
