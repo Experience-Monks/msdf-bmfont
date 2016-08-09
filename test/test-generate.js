@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const opt = {
+  fieldType: 'msdf',
 };
 generateBMFont(path.join(__dirname, 'Roboto-Regular.ttf'), opt, (error, textures, font) => {
   if (error) throw error;

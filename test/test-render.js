@@ -16,7 +16,7 @@ function init () {
 
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
-  camera.position.z = 100;
+  camera.position.z = 350;
 
   renderer = new THREE.WebGLRenderer({canvas});
   renderer.setClearColor(0xffffff);
@@ -48,7 +48,7 @@ fontPreloader((err, data) => {
   var geometry = createTextGeometry({
     font: data.font
   });
-  geometry.update('test  text');
+  geometry.update('Foo*bar!');
   mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = Math.PI;
   // mesh.position.z = -130;
