@@ -1,13 +1,40 @@
 {
-  "name": "msdfjs",
+  "name": "msdf-bmfont",
   "version": "1.0.0",
-  "description": "A library for creating signed distance fields from fonts",
+  "description": "Creates a bitmap font of signed distance fields from a font file",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Ari Lotter",
-  "license": "ISC",
+  "author": {
+    "name": "Ari Lotter",
+    "email": "arilotter@gmail.com",
+    "url": "https://github.com/arilotter"
+  },
+  "keywords": [
+    "bmfont",
+    "bitmap",
+    "font",
+    "text",
+    "fonts",
+    "signed",
+    "distance",
+    "field",
+    "glyph",
+    "glyphs",
+    "sdf",
+    "msdf",
+    "multichannel"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Jam3/msdf-bmfont.git"
+  },
+  "homepage": "https://github.com/Jam3/msdf-bmfont",
+  "bugs": {
+    "url": "https://github.com/Jam3/msdf-bmfont/issues"
+  },
+  "license": "MIT",
   "dependencies": {
     "canvas": "^1.4.0",
     "map-limit": "0.0.1",
