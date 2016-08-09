@@ -4,10 +4,10 @@ const createTextGeometry = require('three-bmfont-text');
 const createMSDFShader = require('./createMSDFShader');
 const fontPreloader = require('./fontPreloader');
 
-var cubeMesh, scene, camera, renderer, mesh;
+let scene, camera, renderer, mesh;
 
 function init () {
-  var canvas = document.createElement('canvas');
+  const canvas = document.createElement('canvas');
   document.body.appendChild(canvas);
   canvas.width = window.innerWidth * window.devicePixelRatio;
   canvas.height = window.innerHeight * window.devicePixelRatio;
