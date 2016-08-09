@@ -168,7 +168,7 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
     try {
       imageData = new Canvas.ImageData(new Uint8ClampedArray(pixels), width, height);
     } catch (err) {
-      console.log(`failed to generate image for character '${char}' (character code ${char.charCodeAt(0)})`);
+      console.log(`failed to generate bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font without image`);
       width = 0;
       height = 0;
     }
