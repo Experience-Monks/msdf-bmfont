@@ -157,11 +157,6 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
     for (let i = 0; i < rawImageData.length; i += channelCount) {
       pixels.push(...rawImageData.slice(i, i + channelCount), 255); // add 255 as alpha every 3 elements
     }
-    // if (((pixels.length / 4) / width) / height !== 1) {
-    //   console.log('output error, image is wrong length');
-    //   console.log('expected', width * height * 4, 'got', pixels.length);
-    //   debugger;
-    // }
     let imageData;
     if (isNaN(channelCount)) {
       console.log(`couldn't generate bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font without image`);

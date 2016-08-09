@@ -1,5 +1,6 @@
 const parallel = require('run-parallel');
 const loadBmfont = require('load-bmfont');
+const path = require('path');
 const noop = () => {};
 
 var loadedResult;
@@ -14,14 +15,14 @@ module.exports = function (cb = noop) {
   }
   parallel({
     texture: (next) => {
-      var texture = new THREE.TextureLoader().load('sheet0.png', () => {
+      var texture = new THREE.TextureLoader().load(path.join(__dirname, 'sheet0.png'), () => {
         next(null, texture);
       }, noop, () => {
         next(new Error('Could not load font image'));
       });
     },
     font: (next) => {
-      loadBmfont('font.fnt', (err, font) => {
+      loadBmfont(path.join(__dirname, 'font.fnt'), (err, font) => {
         if (err) return next(err);
         next(null, font);
       });
