@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const opt = {
-  charset: 'ABCDEFG1234567'.split(''),
+  charset: 'ABCDEFG1234567 ',
   fieldType: 'msdf'
 };
 generateBMFont('Roboto-Regular.ttf', opt, (error, textures, font) => {
