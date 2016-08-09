@@ -1,4 +1,4 @@
-const generateBMFont = require('./msdfgen');
+const generateBMFont = require('./index');
 const fs = require('fs');
 const path = require('path');
 
