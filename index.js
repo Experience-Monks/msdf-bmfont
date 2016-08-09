@@ -154,8 +154,14 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
     if (!isNaN(channelCount) && channelCount % 1 !== 0) {
       return callback(new RangeError('msdfgen returned an image with an invalid length'));
     }
-    for (let i = 0; i < rawImageData.length; i += channelCount) {
-      pixels.push(...rawImageData.slice(i, i + channelCount), 255); // add 255 as alpha every 3 elements
+    if (fieldType === 'msdf') {
+      for (let i = 0; i < rawImageData.length; i += channelCount) {
+        pixels.push(...rawImageData.slice(i, i + channelCount), 255); // add 255 as alpha every 3 elements
+      }
+    } else {
+      for (let i = 0; i < rawImageData.length; i += channelCount) {
+        pixels.push(rawImageData[i], rawImageData[i], rawImageData[i], 255); // make 4-channel
+      }
     }
     let imageData;
     if (isNaN(channelCount)) {
