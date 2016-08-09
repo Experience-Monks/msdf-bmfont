@@ -13,7 +13,7 @@ module.exports = function (fontPath) {
     const context = canvas.getContext('2d');
     const packer = new MultiBinPacker(width, height, padding);
     const chars = [];
-    mapLimit(charset.split(''), 15, (char, cb) => {
+    mapLimit(charset, 15, (char, cb) => {
       generateImage(char, fontSize, 'msdf', (err, res) => {
         if (err) return cb(err);
         cb(null, res);
