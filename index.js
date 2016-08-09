@@ -4,7 +4,7 @@ const path = require('path');
 
 const makeSDF = getSDFGenerator('Roboto-Regular.ttf');
 
-const charset = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZ z';
+const charset = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz ';
 // const charset = 'j';
 const fontSize = 32;
 const pageWidth = 512;
