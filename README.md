@@ -33,12 +33,12 @@ generateBMFont('Some-Font.ttf', (error, textures, font) => {
 });
 ```
 
-Generating a monochrome signed distance field with a custom character set
+Generating a single channel signed distance field with a custom character set:
 ```js
 const generateBMFont = require('msdf-bmfont');
 
 const opt = {
-  charset: 'ABCDEFG1234567'.split(),
+  charset: 'ABCDEFG1234567',
   fieldType: 'sdf'
 };
 generateBMFont('Some-Font.ttf', opt, (error, textures, font) => {
