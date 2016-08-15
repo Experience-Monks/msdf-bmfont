@@ -4,7 +4,8 @@
   "description": "Creates a bitmap font of signed distance fields from a font file",
   "main": "index.js",
   "scripts": {
-    "test": "node test/test-generate.js && devtool test/test-render.js -s"
+    "test": "node test/test-generate.js && open test/sheet0.png",
+    "render": "node test/test-generate.js && devtool test/test-render.js -s"
   },
   "author": {
     "name": "Ari Lotter",

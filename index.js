@@ -37,12 +37,15 @@ function generateBMFont (fontPath, opt, callback) {
   }
 
   const font = opentype.loadSync(fontPath);
+  if (font.outlinesFormat !== 'truetype') {
+    throw new TypeError('must specify a truetype font');
+  }
   const canvas = new Canvas(textureWidth, textureHeight);
   const context = canvas.getContext('2d');
   const packer = new MultiBinPacker(textureWidth, textureHeight, texturePadding);
   const chars = [];
   mapLimit(charset, 15, (char, cb) => {
-    generateImage(font, char, fontSize, fieldType, distanceRange, (err, res) => {
+    generateImage(fontPath, font, char, fontSize, fieldType, distanceRange, (err, res) => {
       if (err) return cb(err);
       cb(null, res);
     });
@@ -66,11 +69,12 @@ function generateBMFont (fontPath, opt, callback) {
       return canvas.toBuffer();
     });
     const os2 = font.tables.os2;
+    const name = font.tables.name.fullName;
     const fontData = {
       pages: [],
       chars,
       info: {
-        face: `${font.familyName} ${font.styleName}`,
+        face: name[Object.getOwnPropertyNames(name)[0]],
         size: fontSize,
         bold: 0,
         italic: 0,
@@ -83,7 +87,7 @@ function generateBMFont (fontPath, opt, callback) {
         spacing: [texturePadding, texturePadding]
       },
       common: {
-        lineHeight: os2.sTypoAscender - os2.sTypoDescender + os2.sTypoLineGap,
+        lineHeight: (os2.sTypoAscender - os2.sTypoDescender + os2.sTypoLineGap) * (fontSize / font.unitsPerEm),
         base: font.ascender * (fontSize / font.unitsPerEm),
         scaleW: textureWidth,
         scaleH: textureHeight,
@@ -99,11 +103,12 @@ function generateBMFont (fontPath, opt, callback) {
   });
 }
 
-function generateImage (font, char, fontSize, fieldType, distanceRange, callback) {
+function generateImage (fontPath, font, char, fontSize, fieldType, distanceRange, callback) {
   const glyph = font.charToGlyph(char);
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
   let currentContour = [];
+  let bBox = [0, 0, 0, 0];
   commands.forEach(command => {
     if (command.type === 'M') { // new contour
       if (currentContour.length > 0) {
@@ -121,7 +126,7 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
     const lastIndex = contour.length - 1;
     contour.forEach((command, index) => {
       if (command.type === 'Z') {
-        // shapeDesc += `${contour[0].x}, ${contour[0].y}`;
+        shapeDesc += `${contour[0].x}, ${contour[0].y}`;
         // adding the last point breaks it??!??!
       } else {
         if (command.type === 'C') {
@@ -130,6 +135,10 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
           shapeDesc += `(${command.x1}, ${command.y1}); `;
         }
         shapeDesc += `${command.x}, ${command.y}`;
+        bBox[0] = Math.min(bBox[0], command.x);
+        bBox[1] = Math.min(bBox[1], command.y);
+        bBox[2] = Math.max(bBox[2], command.x);
+        bBox[3] = Math.max(bBox[3], command.y);
       }
       if (index !== lastIndex) {
         shapeDesc += '; ';
@@ -137,21 +146,30 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
     });
     shapeDesc += '}';
   });
-
   if (contours.some(cont => cont.length === 1)) console.log('length is 1, failed to normalize glyph');
   const scale = fontSize / font.unitsPerEm;
   const pad = 5;
-  let width = Math.round((glyph.xMax - glyph.xMin) * scale) + pad + pad;
-  let height = Math.round((font.ascender - font.descender) * scale) + pad + pad;
+  let width = Math.round(bBox[2] - bBox[0]) + pad + pad;
+  let height = Math.round(bBox[3] - bBox[1]) + pad + pad;
   // let height = Math.round((glyph.yMax - glyph.yMin) * scale) + pad + pad;
-  let command = `${__dirname}/msdfgen.osx ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${font.ascender * scale} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
+  // let topOffset = (font.tables.head.yMax - (glyph.yMax + glyph.yMin)) * scale;
+  let topOffset = -bBox[1] + pad;
+  // console.log(topOffset);
+  let command = `${__dirname}/msdfgen.osx ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${topOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
+  if (font.outlinesFormat === 'cff') {
+    command += ' -reverseorder';
+  }
   // command += ` -testrender output/${char.charCodeAt(0)}-render.png ${width * 10} ${height * 10}`;
+
   exec(command, (err, stdout, stderr) => {
     if (err) return callback(err);
     const rawImageData = stdout.match(/([0-9a-fA-F]+)/g).map(str => parseInt(str, 16)); // split on every number, parse
     const pixels = [];
     const channelCount = rawImageData.length / width / height;
+
     if (!isNaN(channelCount) && channelCount % 1 !== 0) {
+      console.error(command);
+      console.error(stdout);
       return callback(new RangeError('msdfgen returned an image with an invalid length'));
     }
     if (fieldType === 'msdf') {
@@ -164,8 +182,10 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
       }
     }
     let imageData;
-    if (isNaN(channelCount)) {
-      console.log(`couldn't generate bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font without image`);
+    if (isNaN(channelCount) || !rawImageData.some(x => x !== 0)) { // if character is blank
+      console.warn(`no bitmap for character '${char}' (${char.charCodeAt(0)}), adding to font as empty`);
+      console.warn(command);
+      console.warn('---');
       width = 0;
       height = 0;
     } else {
@@ -178,7 +198,7 @@ function generateImage (font, char, fontSize, fieldType, distanceRange, callback
           id: char.charCodeAt(0),
           width, height,
           xoffset: 0,
-          yoffset: 0,
+          yoffset: bBox[1],
           xadvance: glyph.advanceWidth * scale,
           chnl: 15
         }

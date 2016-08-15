@@ -2,10 +2,10 @@
 
 [![unstable](http://badges.github.io/stability-badges/dist/unstable.svg)](http://github.com/badges/stability-badges)
 
-Converts a font file into multichannel signed distance fields, then outputs packed spritesheets and a json representation of an AngelCode BMfont.
+Converts a `.ttf` font file into multichannel signed distance fields, then outputs packed spritesheets and a json representation of an AngelCode BMfont.
 
 Signed distance fields are a method of reproducing vector shapes from a texture representation, popularized in [this paper by Valve](http://www.valvesoftware.com/publications/2007/SIGGRAPH2007_AlphaTestedMagnification.pdf).
-This tool uses [Chlumsky's msdfgen](https://github.com/Chlumsky/msdfgen) to generate multichannel signed distance fields to preserve sharp corners. The distance fields are created from vector fonts, then rendered into texture pages. A BMFont object is provided to allow the textures to be rendered as a font. This module can be used to automatically generate font textures with a minimal character set.
+This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to generate multichannel signed distance fields to preserve corners. The distance fields are created from vector fonts, then rendered into texture pages. A BMFont object is provided for character layout.
 
 ## Install
 
