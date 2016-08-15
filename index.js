@@ -151,19 +151,12 @@ function generateImage (fontPath, font, char, fontSize, fieldType, distanceRange
   const pad = 5;
   let width = Math.round(bBox[2] - bBox[0]) + pad + pad;
   let height = Math.round(bBox[3] - bBox[1]) + pad + pad;
-  // let height = Math.round((glyph.yMax - glyph.yMin) * scale) + pad + pad;
-  // let topOffset = (font.tables.head.yMax - (glyph.yMax + glyph.yMin)) * scale;
   let topOffset = -bBox[1] + pad;
-  // console.log(topOffset);
   let command = `${__dirname}/msdfgen.osx ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${topOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
-  if (font.outlinesFormat === 'cff') {
-    command += ' -reverseorder';
-  }
-  // command += ` -testrender output/${char.charCodeAt(0)}-render.png ${width * 10} ${height * 10}`;
 
   exec(command, (err, stdout, stderr) => {
     if (err) return callback(err);
-    const rawImageData = stdout.match(/([0-9a-fA-F]+)/g).map(str => parseInt(str, 16)); // split on every number, parse
+    const rawImageData = stdout.match(/([0-9a-fA-F]+)/g).map(str => parseInt(str, 16)); // split on every number, parse from hex
     const pixels = [];
     const channelCount = rawImageData.length / width / height;
 
@@ -178,7 +171,7 @@ function generateImage (fontPath, font, char, fontSize, fieldType, distanceRange
       }
     } else {
       for (let i = 0; i < rawImageData.length; i += channelCount) {
-        pixels.push(rawImageData[i], rawImageData[i], rawImageData[i], 255); // make 4-channel
+        pixels.push(rawImageData[i], rawImageData[i], rawImageData[i], 255); // make monochrome w/ alpha
       }
     }
     let imageData;
