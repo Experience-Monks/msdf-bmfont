@@ -10,7 +10,7 @@ This tool uses [Chlumsky/msdfgen](https://github.com/Chlumsky/msdfgen) to genera
 ## Install
 
 ```bash
-npm install msdf-bmfont
+$ npm install msdf-bmfont
 ```
 
 Unless previously installed you'll _need_ __Cairo__, since [node-canvas](https://github.com/Automattic/node-canvas) depends on it. For system-specific installation view the [node-canvas wiki](https://github.com/Automattic/node-canvas/wiki/_pages).
@@ -42,7 +42,7 @@ generateBMFont('Some-Font.ttf', (error, textures, font) => {
       if (err) throw err;
     });
   });
-  fs.writeFile('font.fnt', JSON.stringify(font), (err) => {
+  fs.writeFile('font.json', JSON.stringify(font), (err) => {
     if (err) throw err;
   });
 });
