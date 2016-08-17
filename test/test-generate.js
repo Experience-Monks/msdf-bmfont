@@ -3,8 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const opt = {
-  distanceRange: 3,
-  fontSize: 62
+
 };
 generateBMFont(path.join(__dirname, 'Roboto-Regular.ttf'), opt, (error, textures, font) => {
   if (error) throw error;
