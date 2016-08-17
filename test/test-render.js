@@ -59,7 +59,7 @@ fontPreloader((err, data) => {
   geometry.update('The quick brown fox jumped over the lazy dogs.');
   mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = Math.PI;
-  mesh.position.x = -160;
-  mesh.position.y = -10;
+  mesh.position.x = -140;
+  mesh.position.y = -100;
   scene.add(mesh);
 });

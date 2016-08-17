@@ -22,7 +22,7 @@ module.exports = function (cb = noop) {
       });
     },
     font: (next) => {
-      loadBmfont(path.join(__dirname, 'font.fnt'), (err, font) => {
+      loadBmfont(path.join(__dirname, 'font.json'), (err, font) => {
         if (err) return next(err);
         next(null, font);
       });

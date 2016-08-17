@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const opt = {
-
+  
 };
 generateBMFont(path.join(__dirname, 'Roboto-Regular.ttf'), opt, (error, textures, font) => {
   if (error) throw error;
@@ -14,7 +14,7 @@ generateBMFont(path.join(__dirname, 'Roboto-Regular.ttf'), opt, (error, textures
       console.log('wrote spritesheet', index);
     });
   });
-  fs.writeFile(path.join(__dirname, 'font.fnt'), JSON.stringify(font), (err) => {
+  fs.writeFile(path.join(__dirname, 'font.json'), JSON.stringify(font), (err) => {
     if (err) throw err;
     console.log('wrote font file');
   });
