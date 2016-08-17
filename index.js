@@ -3,12 +3,24 @@ const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
 const MultiBinPacker = require('multi-bin-packer');
 const Canvas = require('canvas');
+const path = require('path');
 
 const defaultCharset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".split('');
+
+const binaryLookup = {
+  darwin: 'msdfgen.osx',
+  win32: 'msdfgen.exe'
+};
 
 module.exports = generateBMFont;
 
 function generateBMFont (fontPath, opt, callback) {
+  const binName = binaryLookup[process.platform];
+  if (binName === undefined) {
+    throw new Error(`No msdfgen binary for platform ${process.platform}.`);
+  }
+  const binaryPath = path.join(__dirname, 'bin', binName);
+
   if (!fontPath || typeof fontPath !== 'string') {
     throw new TypeError('must specify a font path');
   }
@@ -45,7 +57,14 @@ function generateBMFont (fontPath, opt, callback) {
   const packer = new MultiBinPacker(textureWidth, textureHeight, texturePadding);
   const chars = [];
   mapLimit(charset, 15, (char, cb) => {
-    generateImage(fontPath, font, char, fontSize, fieldType, distanceRange, (err, res) => {
+    generateImage({
+      binaryPath,
+      font,
+      char,
+      fontSize,
+      fieldType,
+      distanceRange
+    }, (err, res) => {
       if (err) return cb(err);
       cb(null, res);
     });
@@ -103,7 +122,8 @@ function generateBMFont (fontPath, opt, callback) {
   });
 }
 
-function generateImage (fontPath, font, char, fontSize, fieldType, distanceRange, callback) {
+function generateImage (opt, callback) {
+  const {binaryPath, font, char, fontSize, fieldType, distanceRange} = opt;
   const glyph = font.charToGlyph(char);
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
@@ -152,7 +172,7 @@ function generateImage (fontPath, font, char, fontSize, fieldType, distanceRange
   let width = Math.round(bBox[2] - bBox[0]) + pad + pad;
   let height = Math.round(bBox[3] - bBox[1]) + pad + pad;
   let topOffset = -bBox[1] + pad;
-  let command = `${__dirname}/msdfgen.osx ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${topOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
+  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${topOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
 
   exec(command, (err, stdout, stderr) => {
     if (err) return callback(err);
