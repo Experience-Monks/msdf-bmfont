@@ -9,10 +9,6 @@ let scene, camera, renderer, mesh;
 function init () {
   const canvas = document.createElement('canvas');
   document.body.appendChild(canvas);
-  canvas.width = window.innerWidth * window.devicePixelRatio;
-  canvas.height = window.innerHeight * window.devicePixelRatio;
-  canvas.style.width = window.innerWidth + 'px';
-  canvas.style.height = window.innerHeight + 'px';
 
   scene = new THREE.Scene();
   camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -20,6 +16,7 @@ function init () {
 
   renderer = new THREE.WebGLRenderer({canvas});
   renderer.setClearColor(0xffffff);
+  renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
