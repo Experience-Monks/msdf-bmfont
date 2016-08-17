@@ -1,11 +1,6 @@
-bower_components
 node_modules
 *.log
-*.ttf
 .DS_Store
-.bundle.js
-bundle.js
-test
-test.js
+test/
+.gitignore
 .npmignore
-LICENSE.md

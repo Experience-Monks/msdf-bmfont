@@ -229,14 +229,16 @@ function generateImage (opt, callback) {
         imageData,
         fontData: {
           id: char.charCodeAt(0),
-          width, height,
+          width: width,
+          height: height,
           xoffset: 0,
           yoffset: bBox.bottom,
           xadvance: glyph.advanceWidth * scale,
           chnl: 15
         }
       },
-      width, height
+      width: width,
+      height: height
     };
     callback(null, container);
   });
