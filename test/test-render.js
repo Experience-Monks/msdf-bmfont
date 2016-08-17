@@ -8,6 +8,9 @@ let scene, camera, renderer, mesh;
 
 function init () {
   const canvas = document.createElement('canvas');
+  canvas.style.display = 'block';
+  document.body.style.margin = '0';
+  document.body.style.overfow = 'hidden';
   document.body.appendChild(canvas);
 
   scene = new THREE.Scene();
@@ -17,7 +20,14 @@ function init () {
   renderer = new THREE.WebGLRenderer({canvas});
   renderer.setClearColor(0xffffff);
   renderer.setPixelRatio(window.devicePixelRatio);
+  window.addEventListener('resize', resize);
+  resize();
+}
+
+function resize () {
   renderer.setSize(window.innerWidth, window.innerHeight);
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
 }
 
 function animate () {
@@ -43,11 +53,13 @@ fontPreloader((err, data) => {
     color: '#000000'
   }));
   var geometry = createTextGeometry({
-    font: data.font
+    font: data.font,
+    width: 300
   });
-  geometry.update('Sweet text, bro!');
+  geometry.update('The quick brown fox jumped over the lazy dogs.');
   mesh = new THREE.Mesh(geometry, material);
   mesh.rotation.x = Math.PI;
-  mesh.position.x = -140;
+  mesh.position.x = -160;
+  mesh.position.y = -10;
   scene.add(mesh);
 });
