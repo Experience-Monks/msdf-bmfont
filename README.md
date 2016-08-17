@@ -72,7 +72,7 @@ Options:
 The `callback` is called with the arguments `(error, textures, font)`
 
 - `error` on success will be null/undefined
-- `textures` an array of Buffers, each containing the PNG data of one texture sheet
+- `textures` an array of ndarrays, each containing the raw image data of one texture sheet
 - `font` an object containing the BMFont data, to be used to render the font
 
 Since `opt` is optional, you can specify `callback` as the second argument.

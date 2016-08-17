@@ -1,6 +1,7 @@
 const generateBMFont = require('../index');
 const fs = require('fs');
 const path = require('path');
+const savePixels = require('save-pixels');
 
 const opt = {
 
@@ -9,8 +10,10 @@ generateBMFont(path.join(__dirname, 'Roboto-Regular.ttf'), opt, (error, textures
   if (error) throw error;
   textures.forEach((sheet, index) => {
     font.pages.push(`sheet${index}.png`);
-    fs.writeFile(path.join(__dirname, `sheet${index}.png`), sheet, (err) => {
-      if (err) throw err;
+    const writeStream = fs.createWriteStream(path.join(__dirname, `sheet${index}.png`));
+    const pixStream = savePixels(sheet, 'png');
+    pixStream.pipe(writeStream);
+    pixStream.on('end', () => {
       console.log('wrote spritesheet', index);
     });
   });

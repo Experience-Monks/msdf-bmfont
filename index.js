@@ -2,9 +2,9 @@ const opentype = require('opentype.js');
 const exec = require('child_process').exec;
 const mapLimit = require('map-limit');
 const MultiBinPacker = require('multi-bin-packer');
-const Canvas = require('canvas');
 const path = require('path');
-
+const ndarray = require('ndarray');
+const ndarrayOps = require('ndarray-ops');
 const defaultCharset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~".split('');
 
 const binaryLookup = {
@@ -52,8 +52,6 @@ function generateBMFont (fontPath, opt, callback) {
   if (font.outlinesFormat !== 'truetype') {
     throw new TypeError('must specify a truetype font');
   }
-  const canvas = new Canvas(textureWidth, textureHeight);
-  const context = canvas.getContext('2d');
   const packer = new MultiBinPacker(textureWidth, textureHeight, texturePadding);
   const chars = [];
   mapLimit(charset, 15, (char, cb) => {
@@ -71,13 +69,14 @@ function generateBMFont (fontPath, opt, callback) {
   }, (err, results) => {
     if (err) callback(err);
     packer.addArray(results);
+    const texArray = new Uint8ClampedArray(textureWidth * textureHeight * 4);
+    const atlas = ndarray(texArray, [textureWidth, textureHeight, 4]);
+    texArray.fill(255); // fill with white
     const textures = packer.bins.map((bin, index) => {
-      context.fillStyle = '#ffffff';
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      // context.clearRect(0, 0, canvas.width, canvas.height);
       bin.rects.forEach(rect => {
         if (rect.data.imageData) {
-          context.putImageData(rect.data.imageData, rect.x, rect.y);
+          const view = atlas.lo(rect.x, rect.y).hi(rect.data.fontData.width, rect.data.fontData.height);
+          ndarrayOps.assign(view, rect.data.imageData);
         }
         const charData = rect.data.fontData;
         charData.x = rect.x;
@@ -85,19 +84,19 @@ function generateBMFont (fontPath, opt, callback) {
         charData.page = index;
         chars.push(rect.data.fontData);
       });
-      return canvas.toBuffer();
+      return atlas;
     });
     const os2 = font.tables.os2;
     const name = font.tables.name.fullName;
     const fontData = {
       pages: [],
-      chars,
+      chars: chars,
       info: {
         face: name[Object.getOwnPropertyNames(name)[0]],
         size: fontSize,
         bold: 0,
         italic: 0,
-        charset,
+        charset: charset,
         unicode: 1,
         stretchH: 100,
         smooth: 1,
@@ -128,7 +127,12 @@ function generateImage (opt, callback) {
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
   let currentContour = [];
-  let bBox = [0, 0, 0, 0];
+  let bBox = {
+    left: 0,
+    bottom: 0,
+    right: 0,
+    top: 0
+  };
   commands.forEach(command => {
     if (command.type === 'M') { // new contour
       if (currentContour.length > 0) {
@@ -155,10 +159,10 @@ function generateImage (opt, callback) {
           shapeDesc += `(${command.x1}, ${command.y1}); `;
         }
         shapeDesc += `${command.x}, ${command.y}`;
-        bBox[0] = Math.min(bBox[0], command.x);
-        bBox[1] = Math.min(bBox[1], command.y);
-        bBox[2] = Math.max(bBox[2], command.x);
-        bBox[3] = Math.max(bBox[3], command.y);
+        bBox.left = Math.min(bBox.left, command.x);
+        bBox.bottom = Math.min(bBox.bottom, command.y);
+        bBox.right = Math.max(bBox.right, command.x);
+        bBox.top = Math.max(bBox.top, command.y);
       }
       if (index !== lastIndex) {
         shapeDesc += '; ';
@@ -169,10 +173,10 @@ function generateImage (opt, callback) {
   if (contours.some(cont => cont.length === 1)) console.log('length is 1, failed to normalize glyph');
   const scale = fontSize / font.unitsPerEm;
   const pad = 5;
-  let width = Math.round(bBox[2] - bBox[0]) + pad + pad;
-  let height = Math.round(bBox[3] - bBox[1]) + pad + pad;
-  let topOffset = -bBox[1] + pad;
-  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${topOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
+  let width = Math.round(bBox.right - bBox.left) + pad + pad;
+  let height = Math.round(bBox.top - bBox.bottom) + pad + pad;
+  let yOffset = -bBox.bottom + pad;
+  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
 
   exec(command, (err, stdout, stderr) => {
     if (err) return callback(err);
@@ -202,7 +206,7 @@ function generateImage (opt, callback) {
       width = 0;
       height = 0;
     } else {
-      imageData = new Canvas.ImageData(new Uint8ClampedArray(pixels), width, height);
+      imageData = ndarray(new Uint8ClampedArray(pixels), [width, height, 4]);
     }
     const container = {
       data: {
@@ -210,8 +214,8 @@ function generateImage (opt, callback) {
         fontData: {
           id: char.charCodeAt(0),
           width, height,
-          xoffset: 0,
-          yoffset: bBox[1],
+          xoffset: bBox.left,
+          yoffset: bBox.bottom,
           xadvance: glyph.advanceWidth * scale,
           chnl: 15
         }
