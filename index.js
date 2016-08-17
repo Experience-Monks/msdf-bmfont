@@ -37,8 +37,8 @@ function generateBMFont (fontPath, opt, callback) {
 
   callback = callback || function () {};
   opt = opt || {};
-  const charset = opt.charset || (typeof defaultCharset === 'string' ? defaultCharset.split('') : defaultCharset);
-  const fontSize = opt.fontSize || 32;
+  let charset = (typeof opt.charset === 'string' ? opt.charset.split('') : opt.charset) || defaultCharset;
+  const fontSize = opt.fontSize || 42;
   const textureWidth = opt.textureWidth || 512;
   const textureHeight = opt.textureHeight || 512;
   const texturePadding = opt.texturePadding || 2;
@@ -87,6 +87,20 @@ function generateBMFont (fontPath, opt, callback) {
       });
       return canvas.toBuffer();
     });
+    const kernings = [];
+    charset.forEach(first => {
+      charset.forEach(second => {
+        const amount = font.getKerningValue(font.charToGlyph(first), font.charToGlyph(second));
+        if (amount !== 0) {
+          kernings.push({
+            first: first.charCodeAt(0),
+            second: second.charCodeAt(0),
+            amount: amount * (fontSize / font.unitsPerEm)
+          });
+        }
+      });
+    });
+
     const os2 = font.tables.os2;
     const name = font.tables.name.fullName;
     const fontData = {
@@ -116,7 +130,8 @@ function generateBMFont (fontPath, opt, callback) {
         redChnl: 0,
         greenChnl: 0,
         blueChnl: 0
-      }
+      },
+      kernings: kernings
     };
     callback(null, textures, fontData);
   });
@@ -128,7 +143,12 @@ function generateImage (opt, callback) {
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
   let currentContour = [];
-  let bBox = [0, 0, 0, 0];
+  let bBox = {
+    left: 0,
+    bottom: 0,
+    right: 0,
+    top: 0
+  };
   commands.forEach(command => {
     if (command.type === 'M') { // new contour
       if (currentContour.length > 0) {
@@ -146,7 +166,7 @@ function generateImage (opt, callback) {
     const lastIndex = contour.length - 1;
     contour.forEach((command, index) => {
       if (command.type === 'Z') {
-        shapeDesc += `${contour[0].x}, ${contour[0].y}`;
+        // shapeDesc += `${contour[0].x}, ${contour[0].y}`;
         // adding the last point breaks it??!??!
       } else {
         if (command.type === 'C') {
@@ -155,10 +175,10 @@ function generateImage (opt, callback) {
           shapeDesc += `(${command.x1}, ${command.y1}); `;
         }
         shapeDesc += `${command.x}, ${command.y}`;
-        bBox[0] = Math.min(bBox[0], command.x);
-        bBox[1] = Math.min(bBox[1], command.y);
-        bBox[2] = Math.max(bBox[2], command.x);
-        bBox[3] = Math.max(bBox[3], command.y);
+        bBox.left = Math.min(bBox.left, command.x);
+        bBox.bottom = Math.min(bBox.bottom, command.y);
+        bBox.right = Math.max(bBox.right, command.x);
+        bBox.top = Math.max(bBox.top, command.y);
       }
       if (index !== lastIndex) {
         shapeDesc += '; ';
@@ -169,10 +189,10 @@ function generateImage (opt, callback) {
   if (contours.some(cont => cont.length === 1)) console.log('length is 1, failed to normalize glyph');
   const scale = fontSize / font.unitsPerEm;
   const pad = 5;
-  let width = Math.round(bBox[2] - bBox[0]) + pad + pad;
-  let height = Math.round(bBox[3] - bBox[1]) + pad + pad;
-  let topOffset = -bBox[1] + pad;
-  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${topOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
+  let width = Math.round(bBox.right - bBox.left) + pad + pad;
+  let height = Math.round(bBox.top - bBox.bottom) + pad + pad;
+  let yOffset = -bBox.bottom + pad;
+  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
 
   exec(command, (err, stdout, stderr) => {
     if (err) return callback(err);
@@ -211,7 +231,7 @@ function generateImage (opt, callback) {
           id: char.charCodeAt(0),
           width, height,
           xoffset: 0,
-          yoffset: bBox[1],
+          yoffset: bBox.bottom,
           xadvance: glyph.advanceWidth * scale,
           chnl: 15
         }

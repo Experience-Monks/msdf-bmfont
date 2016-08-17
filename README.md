@@ -71,7 +71,7 @@ Options:
 - `charset` (String|Array)
   - the characters to include in the bitmap font. Defaults to all ASCII printable characters. 
 - `fontSize` (Number)
-  - the font size at which to generate the distance field. Defaults to `32`
+  - the font size at which to generate the distance field. Defaults to `42`
 - `textureWidth, textureHeight` (Number)
   - the dimensions of an output texture sheet, normally power-of-2 for GPU usage. Both dimensions default to `512`
 - `texturePadding` (Number)
