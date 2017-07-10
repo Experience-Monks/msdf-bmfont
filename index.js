@@ -161,6 +161,7 @@ function generateImage (opt, callback) {
   contours.push(currentContour);
 
   let shapeDesc = '';
+  let firstCommand = true;
   contours.forEach(contour => {
     shapeDesc += '{';
     const lastIndex = contour.length - 1;
@@ -175,10 +176,18 @@ function generateImage (opt, callback) {
           shapeDesc += `(${command.x1}, ${command.y1}); `;
         }
         shapeDesc += `${command.x}, ${command.y}`;
-        bBox.left = Math.min(bBox.left, command.x);
-        bBox.bottom = Math.min(bBox.bottom, command.y);
-        bBox.right = Math.max(bBox.right, command.x);
-        bBox.top = Math.max(bBox.top, command.y);
+        if (firstCommand) {
+          bBox.left = command.x;
+          bBox.bottom = command.y;
+          bBox.right = command.x;
+          bBox.top = command.y;
+          firstCommand = false;
+        } else {
+          bBox.left = Math.min(bBox.left, command.x);
+          bBox.bottom = Math.min(bBox.bottom, command.y);
+          bBox.right = Math.max(bBox.right, command.x);
+          bBox.top = Math.max(bBox.top, command.y);
+        }
       }
       if (index !== lastIndex) {
         shapeDesc += '; ';
@@ -188,6 +197,7 @@ function generateImage (opt, callback) {
   });
   if (contours.some(cont => cont.length === 1)) console.log('length is 1, failed to normalize glyph');
   const scale = fontSize / font.unitsPerEm;
+  const baseline = font.ascender * (fontSize / font.unitsPerEm);
   const pad = 5;
   let width = Math.round(bBox.right - bBox.left) + pad + pad;
   let height = Math.round(bBox.top - bBox.bottom) + pad + pad;
@@ -232,7 +242,7 @@ function generateImage (opt, callback) {
           width: width,
           height: height,
           xoffset: 0,
-          yoffset: bBox.bottom,
+          yoffset: bBox.bottom - pad + baseline,
           xadvance: glyph.advanceWidth * scale,
           chnl: 15
         }
