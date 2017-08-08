@@ -121,7 +121,7 @@ function generateBMFont (fontPath, opt, callback) {
       },
       common: {
         lineHeight: (os2.sTypoAscender - os2.sTypoDescender + os2.sTypoLineGap) * (fontSize / font.unitsPerEm),
-        base: font.ascender * (fontSize / font.unitsPerEm),
+        base: os2.sTypoAscender * (fontSize / font.unitsPerEm) + distanceRange,
         scaleW: textureWidth,
         scaleH: textureHeight,
         pages: packer.bins.length,
@@ -197,8 +197,8 @@ function generateImage (opt, callback) {
   });
   if (contours.some(cont => cont.length === 1)) console.log('length is 1, failed to normalize glyph');
   const scale = fontSize / font.unitsPerEm;
-  const baseline = font.ascender * (fontSize / font.unitsPerEm);
-  const pad = 5;
+  const baseline = font.tables.os2.sTypoAscender * (fontSize / font.unitsPerEm);
+  const pad = distanceRange;
   let width = Math.round(bBox.right - bBox.left) + pad + pad;
   let height = Math.round(bBox.top - bBox.bottom) + pad + pad;
   let yOffset = -bBox.bottom + pad;
@@ -242,7 +242,7 @@ function generateImage (opt, callback) {
           width: width,
           height: height,
           xoffset: 0,
-          yoffset: bBox.bottom - pad + baseline,
+          yoffset: bBox.bottom + pad + baseline,
           xadvance: glyph.advanceWidth * scale,
           chnl: 15
         }
