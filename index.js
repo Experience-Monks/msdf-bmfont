@@ -72,9 +72,12 @@ function generateBMFont (fontPath, opt, callback) {
     if (err) callback(err);
     packer.addArray(results);
     const textures = packer.bins.map((bin, index) => {
-      context.fillStyle = '#ffffff';
-      context.fillRect(0, 0, canvas.width, canvas.height);
-      // context.clearRect(0, 0, canvas.width, canvas.height);
+      if(fieldType == "msdf") {
+        context.fillStyle = '#ffffff';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+      } else {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+      }
       bin.rects.forEach(rect => {
         if (rect.data.imageData) {
           context.putImageData(rect.data.imageData, rect.x, rect.y);
@@ -161,7 +164,6 @@ function generateImage (opt, callback) {
   contours.push(currentContour);
 
   let shapeDesc = '';
-  let firstCommand = true;
   contours.forEach(contour => {
     shapeDesc += '{';
     const lastIndex = contour.length - 1;
@@ -176,18 +178,10 @@ function generateImage (opt, callback) {
           shapeDesc += `(${command.x1}, ${command.y1}); `;
         }
         shapeDesc += `${command.x}, ${command.y}`;
-        if (firstCommand) {
-          bBox.left = command.x;
-          bBox.bottom = command.y;
-          bBox.right = command.x;
-          bBox.top = command.y;
-          firstCommand = false;
-        } else {
-          bBox.left = Math.min(bBox.left, command.x);
-          bBox.bottom = Math.min(bBox.bottom, command.y);
-          bBox.right = Math.max(bBox.right, command.x);
-          bBox.top = Math.max(bBox.top, command.y);
-        }
+        bBox.left = Math.min(bBox.left, command.x);
+        bBox.bottom = Math.min(bBox.bottom, command.y);
+        bBox.right = Math.max(bBox.right, command.x);
+        bBox.top = Math.max(bBox.top, command.y);
       }
       if (index !== lastIndex) {
         shapeDesc += '; ';
@@ -221,7 +215,8 @@ function generateImage (opt, callback) {
       }
     } else {
       for (let i = 0; i < rawImageData.length; i += channelCount) {
-        pixels.push(rawImageData[i], rawImageData[i], rawImageData[i], 255); // make monochrome w/ alpha
+        var sdfValue = rawImageData[i];
+        pixels.push(sdfValue, sdfValue, sdfValue, sdfValue); // make monochrome w/ alpha
       }
     }
     let imageData;
