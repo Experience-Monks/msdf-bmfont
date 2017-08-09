@@ -44,6 +44,7 @@ function generateBMFont (fontPath, opt, callback) {
   const texturePadding = opt.texturePadding || 2;
   const distanceRange = opt.distanceRange || 3;
   const fieldType = opt.fieldType || 'msdf';
+  const roundDecimal = opt.roundDecimal; // if no roudDecimal option, left null as-is
   if (fieldType !== 'msdf' && fieldType !== 'sdf' && fieldType !== 'psdf') {
     throw new TypeError('fieldType must be one of msdf, sdf, or psdf');
   }
@@ -136,6 +137,7 @@ function generateBMFont (fontPath, opt, callback) {
       },
       kernings: kernings
     };
+    if(roundDecimal != null) RoundAllValue(fontData, roundDecimal);
     callback(null, textures, fontData);
   });
 }
@@ -247,4 +249,38 @@ function generateImage (opt, callback) {
     };
     callback(null, container);
   });
+}
+
+function RoundAllValue (obj, decimal = 0) {
+  for (var key in obj) {
+    if (obj.hasOwnProperty(key)) {
+      if (obj[key] !== null) {
+        if (typeof(obj[key]) == "object") {
+          RoundAllValue (obj[key], decimal);
+        } else {
+          if(isNumeric(obj[key])) {
+            var oldNumber = obj[key];
+            obj[key] = roundNumber(obj[key], decimal);
+          }
+        }
+      }
+    }
+  }
+}
+
+function isNumeric (n) {
+  return !isNaN(parseFloat(n)) && isFinite(n);
+}
+
+function roundNumber(num, scale) {
+  if(!("" + num).includes("e")) {
+    return +(Math.round(num + "e+" + scale)  + "e-" + scale);
+  } else {
+    var arr = ("" + num).split("e");
+    var sig = ""
+    if(+arr[1] + scale > 0) {
+      sig = "+";
+    }
+    return +(Math.round(+arr[0] + "e" + sig + (+arr[1] + scale)) + "e-" + scale);
+  }
 }
