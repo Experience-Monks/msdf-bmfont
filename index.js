@@ -217,8 +217,7 @@ function generateImage (opt, callback) {
       }
     } else {
       for (let i = 0; i < rawImageData.length; i += channelCount) {
-        var sdfValue = 255 - rawImageData[i];
-        pixels.push(sdfValue, sdfValue, sdfValue, sdfValue); // make monochrome w/ alpha
+        pixels.push(rawImageData[i], rawImageData[i], rawImageData[i], rawImageData[i]); // make monochrome w/ alpha
       }
     }
     let imageData;
