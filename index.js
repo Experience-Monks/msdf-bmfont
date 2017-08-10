@@ -64,7 +64,8 @@ function generateBMFont (fontPath, opt, callback) {
       char,
       fontSize,
       fieldType,
-      distanceRange
+      distanceRange,
+      roundDecimal
     }, (err, res) => {
       if (err) return cb(err);
       cb(null, res);
@@ -143,7 +144,7 @@ function generateBMFont (fontPath, opt, callback) {
 }
 
 function generateImage (opt, callback) {
-  const {binaryPath, font, char, fontSize, fieldType, distanceRange} = opt;
+  const {binaryPath, font, char, fontSize, fieldType, distanceRange, roundDecimal} = opt;
   const glyph = font.charToGlyph(char);
   const commands = glyph.getPath(0, 0, fontSize).commands;
   let contours = [];
@@ -166,6 +167,7 @@ function generateImage (opt, callback) {
   contours.push(currentContour);
 
   let shapeDesc = '';
+  let firstCommand = true;
   contours.forEach(contour => {
     shapeDesc += '{';
     const lastIndex = contour.length - 1;
@@ -180,10 +182,18 @@ function generateImage (opt, callback) {
           shapeDesc += `(${command.x1}, ${command.y1}); `;
         }
         shapeDesc += `${command.x}, ${command.y}`;
-        bBox.left = Math.min(bBox.left, command.x);
-        bBox.bottom = Math.min(bBox.bottom, command.y);
-        bBox.right = Math.max(bBox.right, command.x);
-        bBox.top = Math.max(bBox.top, command.y);
+        if (firstCommand) {
+          bBox.left = command.x;
+          bBox.bottom = command.y;
+          bBox.right = command.x;
+          bBox.top = command.y;
+          firstCommand = false;
+        } else  {
+          bBox.left = Math.min(bBox.left, command.x);
+          bBox.bottom = Math.min(bBox.bottom, command.y);
+          bBox.right = Math.max(bBox.right, command.x);
+          bBox.top = Math.max(bBox.top, command.y);
+        }
       }
       if (index !== lastIndex) {
         shapeDesc += '; ';
@@ -197,8 +207,13 @@ function generateImage (opt, callback) {
   const pad = distanceRange;
   let width = Math.round(bBox.right - bBox.left) + pad + pad;
   let height = Math.round(bBox.top - bBox.bottom) + pad + pad;
+  let xOffset = -bBox.left + pad;
   let yOffset = -bBox.bottom + pad;
-  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${pad} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
+  if (roundDecimal != null) {
+    xOffset = roundNumber(xOffset, roundDecimal);
+    yOffset = roundNumber(yOffset, roundDecimal);
+  }
+  let command = `${binaryPath} ${fieldType} -format text -stdout -size ${width} ${height} -translate ${xOffset} ${yOffset} -pxrange ${distanceRange} -defineshape "${shapeDesc}"`;
 
   exec(command, (err, stdout, stderr) => {
     if (err) return callback(err);
@@ -237,8 +252,8 @@ function generateImage (opt, callback) {
           id: char.charCodeAt(0),
           width: width,
           height: height,
-          xoffset: 0,
-          yoffset: bBox.bottom + pad + baseline,
+          xoffset: bBox.left - pad,
+          yoffset: bBox.bottom - pad + baseline,
           xadvance: glyph.advanceWidth * scale,
           chnl: 15
         }
