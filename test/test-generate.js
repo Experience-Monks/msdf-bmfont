@@ -4,6 +4,7 @@ const path = require('path');
 
 const opt = {
   fieldType: "msdf",
+  fontSize: 64,
   distanceRange: 5,
   roundDecimal: 0
 };
