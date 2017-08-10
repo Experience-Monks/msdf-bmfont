@@ -3,9 +3,12 @@ const fs = require('fs');
 const path = require('path');
 
 const opt = {
-  
+  fieldType: "msdf",
+  fontSize: 64,
+  distanceRange: 5,
+  roundDecimal: 0
 };
-generateBMFont(path.join(__dirname, 'Roboto-Regular.ttf'), opt, (error, textures, font) => {
+generateBMFont(path.join(__dirname, 'Dimbo_R.ttf'), opt, (error, textures, font) => {
   if (error) throw error;
   textures.forEach((sheet, index) => {
     font.pages.push(`sheet${index}.png`);
