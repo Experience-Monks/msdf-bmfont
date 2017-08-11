@@ -74,7 +74,7 @@ function generateBMFont (fontPath, opt, callback) {
     if (err) callback(err);
     packer.addArray(results);
     const textures = packer.bins.map((bin, index) => {
-      if(fieldType == "msdf") {
+      if(fieldType === "msdf") {
         context.fillStyle = '#000000';
         context.fillRect(0, 0, canvas.width, canvas.height);
       } else {
@@ -138,7 +138,7 @@ function generateBMFont (fontPath, opt, callback) {
       },
       kernings: kernings
     };
-    if(roundDecimal != null) RoundAllValue(fontData, roundDecimal);
+    if(roundDecimal !== null) roundAllValue(fontData, roundDecimal);
     callback(null, textures, fontData);
   });
 }
@@ -265,21 +265,14 @@ function generateImage (opt, callback) {
   });
 }
 
-function RoundAllValue (obj, decimal = 0) {
-  for (var key in obj) {
-    if (obj.hasOwnProperty(key)) {
-      if (obj[key] !== null) {
-        if (typeof(obj[key]) == "object") {
-          RoundAllValue (obj[key], decimal);
-        } else {
-          if(isNumeric(obj[key])) {
-            var oldNumber = obj[key];
-            obj[key] = roundNumber(obj[key], decimal);
-          }
-        }
-      }
+function roundAllValue (obj, decimal = 0) {
+  Object.keys(obj).forEach(key => {
+    if (typeof(obj[key]) === "object" && obj[key] !== null) {
+      roundAllValue (obj[key], decimal);
+    } else if(isNumeric(obj[key])) {
+      obj[key] = roundNumber(obj[key], decimal);
     }
-  }
+  });
 }
 
 function isNumeric (n) {
@@ -290,8 +283,8 @@ function roundNumber(num, scale) {
   if(!("" + num).includes("e")) {
     return +(Math.round(num + "e+" + scale)  + "e-" + scale);
   } else {
-    var arr = ("" + num).split("e");
-    var sig = ""
+    const arr = ("" + num).split("e");
+    let sig = ""
     if(+arr[1] + scale > 0) {
       sig = "+";
     }
