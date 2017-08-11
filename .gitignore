@@ -3,3 +3,5 @@ node_modules/
 npm-debug.log
 test/*.json
 test/*.png
+.vscode/
+.eslintrc*
