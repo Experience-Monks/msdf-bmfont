@@ -75,7 +75,7 @@ function generateBMFont (fontPath, opt, callback) {
     packer.addArray(results);
     const textures = packer.bins.map((bin, index) => {
       if(fieldType == "msdf") {
-        context.fillStyle = '#ffffff';
+        context.fillStyle = '#000000';
         context.fillRect(0, 0, canvas.width, canvas.height);
       } else {
         context.clearRect(0, 0, canvas.width, canvas.height);
