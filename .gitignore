@@ -2,6 +2,7 @@
 node_modules/
 npm-debug.log
 test/*.json
+test/*.fnt
 test/*.png
 .vscode/
 .eslintrc*
