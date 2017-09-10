@@ -9,7 +9,8 @@ const defaultCharset = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUV
 
 const binaryLookup = {
   darwin: 'msdfgen.osx',
-  win32: 'msdfgen.exe'
+  win32: 'msdfgen.exe',
+  linux: 'msdfgen'
 };
 
 module.exports = generateBMFont;
