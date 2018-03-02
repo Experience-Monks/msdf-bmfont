@@ -76,6 +76,8 @@ Options:
   - the dimensions of an output texture sheet, normally power-of-2 for GPU usage. Both dimensions default to `512`
 - `texturePadding` (Number)
   - pixels between each glyph in the texture. Defaults to `2`
+- `transparent` (Boolean)
+  - generate texture atlases with a transparent background, instead of white
 - `fieldType` (String)
   - what kind of distance field to generate. Defaults to `msdf`. Must be one of:
     - `msdf` Multi-channel signed distance field

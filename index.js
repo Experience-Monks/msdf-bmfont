@@ -74,7 +74,9 @@ function generateBMFont (fontPath, opt, callback) {
     const textures = packer.bins.map((bin, index) => {
       context.fillStyle = '#ffffff';
       context.fillRect(0, 0, canvas.width, canvas.height);
-      // context.clearRect(0, 0, canvas.width, canvas.height);
+      if (opt.transparent) {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+      }
       bin.rects.forEach(rect => {
         if (rect.data.imageData) {
           context.putImageData(rect.data.imageData, rect.x, rect.y);
