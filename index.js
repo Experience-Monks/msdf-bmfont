@@ -52,7 +52,7 @@ function generateBMFont (fontPath, opt, callback) {
   if (font.outlinesFormat !== 'truetype') {
     throw new TypeError('must specify a truetype font');
   }
-  const canvas = new Canvas(textureWidth, textureHeight);
+  const canvas = Canvas.createCanvas(textureWidth, textureHeight);
   const context = canvas.getContext('2d');
   const packer = new MultiBinPacker(textureWidth, textureHeight, texturePadding);
   const chars = [];
